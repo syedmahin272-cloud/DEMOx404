@@ -1,1 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FINORIX VPS</title>
+  <script src="https://cdn.tailwindcss.com/"></script>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { background-color: #0a0a0b; color: white; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+    
+    /* --- কানেকশন অ্যানিমেশন --- */
+    .connection-box { position: relative; width: 100%; max-width: 500px; height: 200px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .node-logo { width: 70px; height: 70px; object-fit: contain; z-index: 10; filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.3)); }
+    .earth-globe { width: 100px; height: 100px; background-image: url('eart.png'); background-size: cover; border-radius: 50%; box-shadow: inset 0 0 20px rgba(0,0,0,1), 0 0 30px rgba(0, 140, 255, 0.4); animation: rotateGlobe 5s linear infinite; }
+    @keyframes rotateGlobe { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .connection-arc { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); width: 350px; height: 100px; pointer-events: none; }
+    .arc-path { fill: none; stroke: #00ff88; stroke-width: 2; stroke-dasharray: 10, 10; animation: dash 2s linear infinite; opacity: 0.6; }
+    @keyframes dash { to { stroke-dashoffset: -20; } }
 
+    /* ড্যাশবোর্ড গ্রিড */
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; padding: 20px; }
+    .chart-container { position: relative; height: 300px; background: #131722; border: 1px solid #2d2d2d; border-radius: 10px; overflow: hidden; }
+    .grid-chart-header { position: absolute; top: 10px; left: 0; width: 100%; z-index: 45; text-align: center; pointer-events: none; }
+    .grid-brand-text { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 6px; }
+    .grid-logo { position: absolute; bottom: 10px; left: 8px; width: 65px; height: 65px; background: #131722; z-index: 45; display: flex; align-items: center; justify-content: center; }
+    .grid-logo img { width: 90%; height: 90%; object-fit: contain; }
+
+    #modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.98); z-index: 100; display: none; align-items: center; justify-content: center; padding: 10px; }
+    .modal-box { width: 98%; max-width: 1350px; height: 94vh; background: #131722; border: 1px solid #ef4444; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* পেমেন্ট পপআপ */
+    #payment-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.96); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .payment-card { background: #141419; border: 1px solid #333; border-radius: 24px; width: 100%; max-width: 440px; padding: 30px; box-shadow: 0 0 50px rgba(239, 68, 68, 0.3); max-height: 90vh; overflow-y: auto; }
+    .payment-input { width: 100%; background: #0d0d0e; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-top: 5px; color: white; outline: none; font-size: 14px; }
+    .payment-input:focus { border-color: #ef4444; }
+    
+    #method-details-box { background: #1a1a1f; border-left: 4px solid #ef4444; padding: 12px; margin-top: 10px; border-radius: 8px; display: none; }
+    .copy-btn { background: #374151; color: white; font-size: 10px; font-weight: 800; padding: 5px 10px; border-radius: 5px; cursor: pointer; border: none; }
+
+    .modal-vps-header { height: 60px; background: #0d0d0e; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #2d2d2d; flex-shrink: 0; }
+    .modal-logo-blocker { position: absolute; bottom: 10px; left: 8px; width: 65px; height: 65px; background: #131722; z-index: 110; display: flex; align-items: center; justify-content: center; }
+    .hidden { display: none !important; }
+
+    /* লগইন সেকশন */
+    #login-section { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #333; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. CONNECT SCREEN (HOMEPAGE) -->
+  <div id="connect-screen" class="min-h-screen flex items-center justify-center">
+    <div class="text-center p-10 bg-[#141419] border border-gray-800 rounded-3xl shadow-2xl max-w-sm w-full">
+      <img src="./finorixvps.png" class="w-20 h-20 rounded-full mx-auto mb-6 border-2 border-red-500 shadow-lg">
+      <h1 class="text-2xl font-bold mb-6">FINORIX <span class="text-red-500 font-black">VPS</span></h1>
+      <button onclick="runVpsConnection()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-900/30 uppercase tracking-widest">
+        CONNECT TO VPS
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. LOADING SCREEN -->
+  <div id="loading-screen" class="hidden min-h-screen flex flex-col items-center justify-center p-6 bg-black">
+    <div class="connection-box">
+        <img src="quotex.png" class="node-logo">
+        <div class="earth-globe"></div>
+        <img src="quotex.png" class="node-logo">
+        <svg class="connection-arc" viewBox="0 0 350 100">
+            <path class="arc-path" d="M 40,70 Q 175,-30 310,70" />
+        </svg>
+    </div>
+    <div class="w-full max-w-md bg-gray-900 h-1.5 rounded-full mb-6 overflow-hidden">
+        <div id="bar" class="bg-red-500 h-full w-0 transition-all duration-100"></div>
+    </div>
+    <h2 class="text-red-500 font-mono text-4xl font-bold mb-2" id="percent">0%</h2>
+    <p class="text-gray-400 uppercase tracking-widest text-[10px] font-bold">Establishing Secure VPS Handshake...</p>
+  </div>
+
+  <!-- 3. DASHBOARD -->
+  <div id="dashboard" class="hidden flex flex-col min-h-screen">
+    <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0d0d0e]">
+        <span class="font-bold text-[10px] uppercase text-gray-500">Status: <span class="text-green-500">Live Handshake</span></span>
+        <button onclick="goToHome()" class="text-red-500 text-[10px] font-bold underline">Disconnect</button>
+    </header>
+    <div class="charts-grid" id="charts-grid"></div>
+  </div>
+
+  <!-- 4. CHART MODAL -->
+  <div id="modal-overlay">
+      <div class="modal-box">
+          <div class="modal-vps-header">
+              <div class="flex-1"></div>
+              <div class="flex-grow text-center">
+                  <span class="font-black text-2xl tracking-[6px] text-white uppercase">FINORIX <span class="text-red-500">VPS</span></span>
+              </div>
+              <div class="flex-1 text-right">
+                  <button onclick="closeChart()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-bold text-xs">CLOSE</button>
+              </div>
+          </div>
+          <div class="relative flex-grow">
+              <div class="modal-logo-blocker"><img src="./finorixvps.png"></div>
+              <div id="modal-container" class="w-full h-full"></div>
+          </div>
+      </div>
+  </div>
+
+  <!-- 5. PAYMENT & LOGIN POPUP -->
+  <div id="payment-overlay">
+    <div class="payment-card">
+        <div id="payment-form-container">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-extrabold tracking-tighter">UPGRADE TO <span class="text-red-500">PREMIUM</span></h2>
+                <p class="text-gray-400 text-[10px] mt-1 uppercase tracking-widest">Complete payment to unlock full access</p>
+            </div>
+            <form id="payment-form" onsubmit="submitPayment(event)">
+                <div class="mb-4"><label class="text-[10px] font-bold text-gray-500 uppercase">Your Name</label><input type="text" id="pay-name" class="payment-input" placeholder="Full Name" required></div>
+                <div class="mb-4"><label class="text-[10px] font-bold text-gray-500 uppercase">Email Address</label><input type="email" id="pay-email" class="payment-input" placeholder="example@mail.com" required></div>
+                <div class="mb-4"><label class="text-[10px] font-bold text-gray-500 uppercase">Payment Method</label>
+                    <select id="pay-method" class="payment-input" onchange="showPaymentDetails()" required>
+                        <option value="" disabled selected>Select Method</option>
+                        <option value="bkash">bKash (Personal)</option>
+                        <option value="bep20">USDT (BEP20)</option>
+                    </select>
+                    <div id="method-details-box">
+                        <p id="method-text" class="text-[10px] text-gray-400 uppercase font-bold"></p>
+                        <div class="flex items-center justify-between gap-2 mt-1">
+                            <p id="method-value" class="text-red-500 font-bold text-sm break-all select-all"></p>
+                            <button type="button" onclick="copyAddress()" id="copy-btn" class="copy-btn">COPY</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-6"><label class="text-[10px] font-bold text-gray-500 uppercase">Upload Payment Screenshot</label><input type="file" id="pay-ss" class="payment-input text-[10px]" accept="image/*" required></div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-xs tracking-widest">Submit Payment</button>
+            </form>
+            <div class="mt-6 text-center"><button onclick="toggleLogin()" class="text-gray-500 hover:text-white text-[10px] font-bold uppercase tracking-widest underline">Already have a Key? Login</button></div>
+        </div>
+
+        <div id="login-section">
+            <div class="text-center mb-6"><h2 class="text-xl font-extrabold tracking-tighter uppercase">Private <span class="text-red-500">Access</span></h2><p class="text-gray-400 text-[10px] mt-1 uppercase tracking-widest">Enter your premium key below</p></div>
+            <div class="mb-4"><label class="text-[10px] font-bold text-gray-500 uppercase">Private Key</label><input type="password" id="private-key-input" class="payment-input" placeholder="••••••••"></div>
+            <button onclick="verifyKey()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl uppercase text-xs tracking-widest">Unlock Now</button>
+            <button onclick="toggleLogin()" class="w-full mt-3 text-gray-500 text-[10px] font-bold uppercase tracking-widest">Go Back to Payment</button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const forexPairs = ["FX:EURUSD", "FX:GBPUSD", "FX:USDJPY", "FX:AUDUSD", "FX:USDCAD", "FX:USDCHF", "FX:NZDUSD", "FX:EURJPY", "FX:GBPJPY", "FX:AUDJPY", "FX:EURGBP", "FX:GBPCAD"];
+    const SECRET_KEY = "ADMIN404"; 
+    let isPremiumUser = false;
+    let paymentTimer;
+
+    function runVpsConnection() {
+        document.getElementById('connect-screen').classList.add('hidden');
+        document.getElementById('loading-screen').classList.remove('hidden');
+        let p = 0;
+        const interval = setInterval(() => {
+            p++;
+            document.getElementById('bar').style.width = p + '%';
+            document.getElementById('percent').innerText = p + '%';
+            if(p >= 100) { clearInterval(interval); initDashboard(); }
+        }, 50); 
+    }
+
+    function initDashboard() {
+        document.getElementById('loading-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        const grid = document.getElementById('charts-grid');
+        grid.innerHTML = '';
+        forexPairs.forEach((symbol, i) => {
+            const card = document.createElement('div');
+            card.className = 'chart-container';
+            card.innerHTML = `<div class="click-shield absolute inset-0 z-50 cursor-pointer" onclick="openChart('${symbol}')"></div>
+                <div class="grid-chart-header"><div class="grid-brand-text"><span class="text-white">FINORIX VPS</span><span class="text-red-500 font-black border-l border-gray-600 pl-2 text-lg">${symbol.split(':')[1]}</span></div></div>
+                <div class="grid-logo"><img src="./finorixvps.png"></div>
+                <div id="tv-grid-${i}" style="height:100%"></div>`;
+            grid.appendChild(card);
+            
+            new TradingView.widget({
+                "autosize": true, "symbol": symbol, "interval": "1",
+                "theme": "dark", "style": "1", "container_id": `tv-grid-${i}`,
+                "hide_top_toolbar": true, "hide_legend": true,
+                "volume": false, // ভলিউম বাদ দেওয়া হয়েছে
+                "disabled_features": ["volume_force_overlay", "create_volume_indicator_by_default"]
+            });
+        });
+    }
+
+    function openChart(symbol) {
+        document.getElementById('modal-overlay').style.display = 'flex';
+        document.getElementById('modal-container').innerHTML = '';
+        new TradingView.widget({
+            "autosize": true, "symbol": symbol, "interval": "1",
+            "theme": "dark", "style": "1", "container_id": "modal-container",
+            "volume": false, // ভলিউম বাদ দেওয়া হয়েছে
+            "disabled_features": ["volume_force_overlay", "create_volume_indicator_by_default"]
+        });
+        
+        if(!isPremiumUser) {
+            paymentTimer = setTimeout(() => {
+                document.getElementById('payment-overlay').style.display = 'flex';
+            }, 3000);
+        }
+    }
+
+    function toggleLogin() {
+        const pForm = document.getElementById('payment-form-container');
+        const lSec = document.getElementById('login-section');
+        lSec.style.display = (lSec.style.display === 'block') ? 'none' : 'block';
+        pForm.style.display = (pForm.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function verifyKey() {
+        if(document.getElementById('private-key-input').value === SECRET_KEY) {
+            isPremiumUser = true;
+            alert("Success! Premium Access Unlocked.");
+            document.getElementById('payment-overlay').style.display = 'none';
+        } else { alert("Invalid Private Key!"); }
+    }
+
+   function showPaymentDetails() {
+        const method = document.getElementById('pay-method').value;
+        const box = document.getElementById('method-details-box');
+        box.style.display = 'block';
+        
+        if(method === 'bkash') { 
+            document.getElementById('method-text').innerText = "bKash (Personal) 1 Month: 6250 TK | 3 Months: 12500 TK Pay:"; 
+            document.getElementById('method-value').innerText = "01332920384"; 
+        } else { 
+            document.getElementById('method-text').innerText = "USDT (BEP20 Address) 1 Month: 50$ | 3 Months: 100$ Pay:"; 
+            document.getElementById('method-value').innerText = "0x149566dEEFf6c7C08c0EFFEe24463478b54f13eB"; 
+        }
+    }
+    function copyAddress() {
+        navigator.clipboard.writeText(document.getElementById('method-value').innerText).then(() => {
+            document.getElementById('copy-btn').innerText = "COPIED!";
+            setTimeout(() => { document.getElementById('copy-btn').innerText = "COPY"; }, 2000);
+        });
+    }
+
+    function closeChart() { clearTimeout(paymentTimer); document.getElementById('modal-overlay').style.display = 'none'; document.getElementById('payment-overlay').style.display = 'none'; }
+    function submitPayment(event) { event.preventDefault(); alert("Payment Submitted! Redirecting to Home..."); goToHome(); }
+
+    function goToHome() {
+        document.getElementById('dashboard').classList.add('hidden');
+        document.getElementById('modal-overlay').style.display = 'none';
+        document.getElementById('payment-overlay').style.display = 'none';
+        document.getElementById('connect-screen').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
