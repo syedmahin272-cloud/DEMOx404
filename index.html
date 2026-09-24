@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FINORIX VPS</title>
+  <title>FINORIX VPS PRO</title>
   <script src="https://cdn.tailwindcss.com/"></script>
   <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@
   <div id="connect-screen" class="min-h-screen flex items-center justify-center">
     <div class="text-center p-10 bg-[#141419] border border-gray-800 rounded-3xl shadow-2xl max-w-sm w-full">
       <img src="./finorixvps.png" class="w-20 h-20 rounded-full mx-auto mb-6 border-2 border-red-500 shadow-lg">
-      <h1 class="text-2xl font-bold mb-6">FINORIX <span class="text-red-500 font-black">VPS</span></h1>
+      <h1 class="text-2xl font-bold mb-6">FINORIX <span class="text-red-500 font-black">VPS</span> <span class="text-white font-black">PRO</span></h1>
       <button onclick="runVpsConnection()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-900/30 uppercase tracking-widest">
         CONNECT TO VPS
       </button>
@@ -93,7 +93,7 @@
           <div class="modal-vps-header">
               <div class="flex-1"></div>
               <div class="flex-grow text-center">
-                  <span class="font-black text-2xl tracking-[6px] text-white uppercase">FINORIX <span class="text-red-500">VPS</span></span>
+                  <span class="font-black text-2xl tracking-[6px] text-white uppercase">FINORIX <span class="text-red-500">VPS PRO</span></span>
               </div>
               <div class="flex-1 text-right">
                   <button onclick="closeChart()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-bold text-xs">CLOSE</button>
@@ -121,7 +121,7 @@
                     <select id="pay-method" class="payment-input" onchange="showPaymentDetails()" required>
                         <option value="" disabled selected>Select Method</option>
                         <option value="bkash">bKash (Personal)</option>
-                        <option value="bep20">USDT (BEP20)</option>
+                        <option value="binance">Binance Pay</option>
                     </select>
                     <div id="method-details-box">
                         <p id="method-text" class="text-[10px] text-gray-400 uppercase font-bold"></p>
@@ -173,7 +173,7 @@
             const card = document.createElement('div');
             card.className = 'chart-container';
             card.innerHTML = `<div class="click-shield absolute inset-0 z-50 cursor-pointer" onclick="openChart('${symbol}')"></div>
-                <div class="grid-chart-header"><div class="grid-brand-text"><span class="text-white">FINORIX VPS</span><span class="text-red-500 font-black border-l border-gray-600 pl-2 text-lg">${symbol.split(':')[1]}</span></div></div>
+                <div class="grid-chart-header"><div class="grid-brand-text"><span class="text-white">FINORIX VPS PRO</span><span class="text-red-500 font-black border-l border-gray-600 pl-2 text-lg">${symbol.split(':')[1]}</span></div></div>
                 <div class="grid-logo"><img src="./finorixvps.png"></div>
                 <div id="tv-grid-${i}" style="height:100%"></div>`;
             grid.appendChild(card);
@@ -226,11 +226,11 @@
         box.style.display = 'block';
         
         if(method === 'bkash') { 
-            document.getElementById('method-text').innerText = "bKash (Personal) 1 Month: 6250 TK | 3 Months: 12500 TK Pay:"; 
+            document.getElementById('method-text').innerText = "bKash (Personal) 12500 TK Pay:"; 
             document.getElementById('method-value').innerText = "01332920384"; 
         } else { 
-            document.getElementById('method-text').innerText = "USDT (BEP20 Address) 1 Month: 50$ | 3 Months: 100$ Pay:"; 
-            document.getElementById('method-value').innerText = "0x149566dEEFf6c7C08c0EFFEe24463478b54f13eB"; 
+            document.getElementById('method-text').innerText = "Binance Pay 100$ (UID):"; 
+            document.getElementById('method-value').innerText = "990361262"; 
         }
     }
     function copyAddress() {
